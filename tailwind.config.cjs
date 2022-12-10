@@ -5,11 +5,7 @@ module.exports = {
     fontFamily: {
       openSans: ['Open Sans', 'sans-serif'],
     },
-    extend: {
-      colors: {
-        baroqueGreen: '#323934',
-      },
-    },
+    extend: {},
   },
   plugins: [],
 };
