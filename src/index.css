@@ -5,7 +5,7 @@
 
 
 html {
-  @apply bg-baroqueGreen text-white font-openSans;
+  @apply bg-slate-50 text-gray-700 font-openSans;
 }
 
 .App {
