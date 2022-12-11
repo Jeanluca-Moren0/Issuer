@@ -1,13 +1,14 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;700&display=swap');
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;700&display=swap');
+
 
 
 html {
-  @apply bg-slate-50 text-gray-700 font-openSans;
+  @apply bg-gray-100 text-gray-700 font-openSans;
 }
 
 .App {
-  @apply w-screen h-screen flex flex-row items-center;
+  @apply w-screen h-screen flex flex-row items-center overflow-hidden;
 }
