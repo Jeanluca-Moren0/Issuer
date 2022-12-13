@@ -1,10 +1,11 @@
 import { Card, Label, TextInput, Button, Avatar, Rating, Spinner } from 'flowbite-react'
-import { useQuery } from 'react-query'
 import { ThousandPlusFormatter } from '../../utils/thousandPlusFormatter';
-import { useState } from 'react';
-import { ReposProps, FormValidatorProps } from './Home.types';
+import { useRef } from 'react';
+import { FormValidatorProps } from './Home.types';
 import { useForm, Resolver } from 'react-hook-form'
 import { ArrowSquareOut, Code } from 'phosphor-react';
+import { useRepos } from '../../services/repos';
+import { dateFormatter } from '../../utils/dateFormatter';
 
 
 const resolver: Resolver<FormValidatorProps> = async (value) => {
@@ -21,24 +22,19 @@ const resolver: Resolver<FormValidatorProps> = async (value) => {
 }
 
 export function Home() {
-  const [userName, setUserName] = useState<string>('')
+  const usernameRef = useRef<string>('')
 
-  const reposFetch = async (): Promise<ReposProps[]> => {
 
-    const response = await fetch(`https://api.github.com/users/${userName}/repos`);
-    return (await response.json())
-
-  };
-
-  const { data, error, isLoading, refetch } = useQuery({ queryKey: ['reposFetch'], queryFn: reposFetch, enabled: false })
-
-  console.log('error', error)
-  console.log('isLoading', isLoading)
+  console.log(usernameRef.current)
+  const { data: repos, error, isLoading, refetch } = useRepos(usernameRef.current, { enabled: false })
 
 
   const { register, handleSubmit, formState: { errors } } = useForm<FormValidatorProps>({ resolver });
 
-  const submitData = handleSubmit(() => refetch())
+  const submitRepos = handleSubmit((e) => {
+    refetch()
+  }
+  )
 
 
   return (
@@ -46,11 +42,11 @@ export function Home() {
 
       <aside className='flex item-center justify-center border border-gray-300 rounded-md p-8 ml-6 w-[500px] h-[250px] '>
 
-        <form className='flex flex-col gap-4 w-full' action='/' onSubmit={submitData} >
+        <form className='flex flex-col gap-4 w-full' action='/' onSubmit={submitRepos} >
           <Label>Insert github's username*: </Label>
-          <TextInput type="text" {...register('githubUser')} onChange={(e) => setUserName(e.target.value)} />
+          <TextInput type="text" {...register('githubUser')} onChange={(e) => usernameRef.current = e.target.value} />
           {errors?.githubUser && <p className='text-sm text-red-500'>{errors.githubUser.message}</p>}
-          <Button color="light" type={'submit'}>
+          <Button color="light" type={'submit'} >
 
             Search for repositories
 
@@ -59,21 +55,25 @@ export function Home() {
       </aside>
       <section className='ml-4 p-4 w-full h-full overflow-y-scroll'>
 
-        {data ?
-          <div className="flex flex-col gap-4 ">
-            <h1 className='text-3xl text-black font-bold'> Founded {data.length} repositories on  {data[0].owner.login} account: </h1>
 
-            {data?.map(repo => (
+
+        {repos ?
+          <div className="flex flex-col gap-4 ">
+            <h1 className='text-3xl text-black font-bold'> Founded {repos.length} repositories on  {repos[0].owner.login} account: </h1>
+
+            {repos?.map(repo => (
 
               <Card key={repo.id} horizontal={true}>
 
                 <div className='p-4'>
                   <div className='flex flex-row justify-between'>
                     <div className='flex gap-2 items-center'>
-                      <p className='text-xl font-bold text-black'>{repo.name}</p>
                       <a href={repo.html_url} target="_blank">
                         <ArrowSquareOut size={16} className='text-gray-500' />
                       </a>
+                      <p className='text-xl font-bold text-black'>{repo.name}</p>
+                      <p className='text-sm'>Last update: {dateFormatter(repo.updated_at)}</p>
+
                     </div>
                     <Rating>
                       <Rating.Star filled={true} />
@@ -87,8 +87,8 @@ export function Home() {
                   <p className='text-md text-gray-500'>{repo.description ? repo.description : 'This repository has no description'}</p>
                   <div className='flex w-full items-center justify-between'>
                     <div className='flex items-center gap-2'>
-                      <img src={repo.owner.avatar_url} alt={`${repo.owner.login} avatar`}  className="rounded-md w-8"/>
-                      <p className='text-gray-500 text-sm'>Made with ❤ by {repo.owner.login}</p>
+                      <img src={repo.owner.avatar_url} alt={`${repo.owner.login} avatar`} className="rounded-full  w-8" />
+                      <p className='text-gray-500 text-sm'>Made with <span className='text-red-600'>❤</span> by {repo.owner.login}</p>
                     </div>
                     <Button color="light">
                       <div className='p-2 flex items-center gap-2 '><Code size={16} className='text-gray-500' /> Open repository issues </div></Button>
